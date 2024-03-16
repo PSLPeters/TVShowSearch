@@ -27,11 +27,6 @@ struct ContentView: View {
     
     @Environment(\.openURL) var openURL
 
-    enum FocusedField {
-        case showToSearchTextField
-    }
-    @FocusState private var focusedField: FocusedField?
-    
     var body: some View {
         ZStack {
             HStack {
@@ -125,7 +120,6 @@ struct ContentView: View {
         HStack (spacing: 10) {
             Text("Show:")
             TextField("Enter a show to search for", text: $showToSearch)
-                .focused($focusedField, equals: .showToSearchTextField)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .onSubmit {
                     Task {
@@ -145,7 +139,6 @@ struct ContentView: View {
                         
                         showToSearch = ""
                         hideKeyboard()
-                        focusedField = .showToSearchTextField
                     }
                 }
             Button {
@@ -166,7 +159,6 @@ struct ContentView: View {
                     
                     showToSearch = ""
                     hideKeyboard()
-                    focusedField = .showToSearchTextField
                 }
             } label: {
                 Text("Search")
