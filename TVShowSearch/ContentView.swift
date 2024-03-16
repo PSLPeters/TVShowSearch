@@ -248,10 +248,6 @@ struct show: Codable {
     let summary: String
 }
 
-#Preview {
-    ContentView()
-}
-
 class PetersHaptics {
     static let process = PetersHaptics()
     
@@ -264,4 +260,8 @@ class PetersHaptics {
     func notification(_ feedbackType: UINotificationFeedbackGenerator.FeedbackType) {
         UINotificationFeedbackGenerator().notificationOccurred(feedbackType)
     }
+}
+
+#Preview {
+    ContentView()
 }
