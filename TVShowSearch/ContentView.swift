@@ -177,6 +177,7 @@ struct ContentView: View {
                 let premieredMonth = premiered.dropFirst(5).prefix(2)
                 let premieredDay = premiered.suffix(2)
                 
+                // MP - Need error checking here since ended can be nil if the show is still airing. Currently, this code doesn't display any results for shows that are still airing.
                 let endedYear = ended.prefix(4)
                 let endedMonth = ended.dropFirst(5).prefix(2)
                 let endedDay = ended.suffix(2)
