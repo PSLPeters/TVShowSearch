@@ -26,6 +26,11 @@ struct ContentView: View {
     @State private var summary = ""
     
     @Environment(\.openURL) var openURL
+
+    enum FocusedField {
+        case showToSearchTextField
+    }
+    @FocusState private var focusedField: FocusedField?
     
     var body: some View {
         ZStack {
@@ -120,7 +125,29 @@ struct ContentView: View {
         HStack (spacing: 10) {
             Text("Show:")
             TextField("Enter a show to search for", text: $showToSearch)
+                .focused($focusedField, equals: .showToSearchTextField)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .onSubmit {
+                    Task {
+                        let showText = showToSearch.replacingOccurrences(of: " ", with: "%20")
+                        
+                        let (data, _) = try await URLSession.shared.data(from: URL(string:"https://api.tvmaze.com/singlesearch/shows?q=\(showText)")!)
+                        let decodedResponse = try? JSONDecoder().decode(show.self, from: data)
+                        name = decodedResponse?.name ?? ""
+                        status = decodedResponse?.status ?? ""
+                        type = decodedResponse?.type ?? ""
+                        language = decodedResponse?.language ?? ""
+                        premiered = decodedResponse?.premiered ?? ""
+                        ended = decodedResponse?.ended ?? ""
+                        runtime = decodedResponse?.runtime ?? 0
+                        url = decodedResponse?.url ?? ""
+                        summary = decodedResponse?.summary.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil) ?? ""
+                        
+                        showToSearch = ""
+                        hideKeyboard()
+                        focusedField = .showToSearchTextField
+                    }
+                }
             Button {
                 Task {
                     let showText = showToSearch.replacingOccurrences(of: " ", with: "%20")
@@ -139,6 +166,7 @@ struct ContentView: View {
                     
                     showToSearch = ""
                     hideKeyboard()
+                    focusedField = .showToSearchTextField
                 }
             } label: {
                 Text("Search")
@@ -156,52 +184,50 @@ struct ContentView: View {
             }
             HStack {
                 Text("Status:")
-                    .foregroundStyle(Color.gray)
                 Spacer()
                 Text(status)
+                    .foregroundStyle(Color.gray)
             }
             HStack {
                 Text("Type:")
-                    .foregroundStyle(Color.gray)
                 Spacer()
                 Text(type)
+                    .foregroundStyle(Color.gray)
             }
             HStack {
                 Text("Language:")
-                    .foregroundStyle(Color.gray)
                 Spacer()
                 Text(language)
+                    .foregroundStyle(Color.gray)
             }
             HStack {
                 let premieredYear = premiered.prefix(4)
                 let premieredMonth = premiered.dropFirst(5).prefix(2)
                 let premieredDay = premiered.suffix(2)
                 
-                // MP - Need error checking here since ended can be nil if the show is still airing. Currently, this code doesn't display any results for shows that are still airing.
                 let endedYear = ended.prefix(4)
                 let endedMonth = ended.dropFirst(5).prefix(2)
                 let endedDay = ended.suffix(2)
                 
                 Text("Premiered:")
-                    .foregroundStyle(Color.gray)
                 Spacer()
                 Text("\(premieredMonth)/\(premieredDay)/\(premieredYear)")
-                Spacer()
-                Text("Ended:")
                     .foregroundStyle(Color.gray)
                 Spacer()
-                Text("\(endedMonth)/\(endedDay)/\(endedYear)")
+                Text("Ended:")
+                Spacer()
+                Text(ended.isEmpty ? "TBD" : "\(endedMonth)/\(endedDay)/\(endedYear)")
+                    .foregroundStyle(Color.gray)
             }
             HStack {
                 Text("Runtime:")
-                    .foregroundStyle(Color.gray)
                 Spacer()
                 Text("\(String(runtime)) minutes")
+                    .foregroundStyle(Color.gray)
             }
             HStack {
                 VStack (alignment: .leading) {
                     Text("URL:")
-                        .foregroundStyle(Color.gray)
                     Button(url) {
                         openURL(URL(string: url)!)
                     }
@@ -209,9 +235,9 @@ struct ContentView: View {
             }
             Divider()
             Text("Summary:")
-                .foregroundStyle(Color.gray)
             ScrollView {
                 Text(summary)
+                    .foregroundStyle(Color.gray)
             }
         }
         .opacity(name.isEmpty ? 0 : 1)
@@ -243,8 +269,8 @@ struct show: Codable {
     let type: String
     let language: String
     let premiered: String
-    let ended: String
-    let runtime: Int
+    let ended: String?
+    let runtime: Int?
     let url: String
     let summary: String
 }
