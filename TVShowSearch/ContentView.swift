@@ -9,6 +9,10 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage("isDarkModeOn") var isDarkModeOn = false
+    
+    @State private var isShowingInformationSheet = false
+    @State private var isShowingLongPressAlert = false
+    
     @State private var showToSearch = ""
     
     @State private var name = ""
@@ -20,7 +24,6 @@ struct ContentView: View {
     @State private var runtime = 0
     @State private var url = ""
     @State private var summary = ""
-
     
     @Environment(\.openURL) var openURL
     
@@ -33,7 +36,7 @@ struct ContentView: View {
                     let image = isDarkModeOn ? "lightbulb" : "lightbulb.fill"
                     Image(systemName: image)
                 }
-                .padding([.leading, .trailing], 15)
+                .padding(.leading, 10)
                 Spacer()
             }
             HStack {
@@ -42,6 +45,77 @@ struct ContentView: View {
                     .bold()
             }
             Spacer()
+            HStack {
+                Spacer()
+                Button(action: {
+                    // bypass for gestures
+                }, label: {
+                    Image(systemName: "info.circle")
+                })
+                .simultaneousGesture(LongPressGesture(minimumDuration: 0.5)
+                    .onEnded { _ in
+                    isShowingLongPressAlert = true
+                    PetersHaptics.process.impact(.heavy)
+                })
+                .simultaneousGesture(TapGesture()
+                    .onEnded {
+                    isShowingInformationSheet = true
+                })
+                .alert(isPresented: $isShowingLongPressAlert) {
+                    Alert(title: Text("Device Information"),
+                          message: Text("Click here to see a detailed listing of the current device's information."))
+                }
+                .padding(.trailing, 10)
+                .sheet(isPresented: $isShowingInformationSheet) {
+                    VStack {
+                        ZStack {
+                            HStack {
+                                Button {
+                                    isShowingInformationSheet = false
+                                } label: {
+                                    Text("Close")
+                                }
+                                .padding([.leading, .top])
+                                Spacer()
+                            }
+                            HStack {
+                                Text("Device Information")
+                                .padding(.top)
+                            }
+                        }
+                        Spacer()
+                        Form {
+                            Section ("Core information:") {
+                                UIDeviceElementView(deviceElementTitle: "Device Name:", deviceElementData: UIDevice.current.name)
+                                UIDeviceElementView(deviceElementTitle: "Device Model:", deviceElementData: UIDevice.current.model)
+                                UIDeviceElementView(deviceElementTitle: "Device Localized Model:", deviceElementData: UIDevice.current.localizedModel)
+                                UIDeviceElementView(deviceElementTitle: "Device System Name:", deviceElementData: UIDevice.current.systemName)
+                                UIDeviceElementView(deviceElementTitle: "Device System Version:", deviceElementData: UIDevice.current.systemVersion)
+                                UIDeviceElementView(deviceElementTitle: "Device Identifier:", deviceElementData: UIDevice.current.identifierForVendor?.uuidString ?? "N/A")
+                                UIDeviceElementView(deviceElementTitle: "Device Type:", deviceElementData: UIDevice.current.userInterfaceIdiom == .phone ? "iPhone" : "iPad")
+                            }
+                            Section ("Screen information:") {
+                                HStack {
+                                    Text("Screen Width:")
+                                    Spacer()
+                                    Text("\(UIScreen.main.bounds.width, specifier: "%.2f") pixels")
+                                }
+                                HStack {
+                                    Text("Screen Height:")
+                                    Spacer()
+                                    Text("\(UIScreen.main.bounds.height, specifier: "%.2f") pixels")
+                                }
+                                HStack {
+                                    Text("Screen Scale:")
+                                    Spacer()
+                                    Text("\(UIScreen.main.scale, specifier: "%.2f") (\(Int(UIScreen.main.scale))x)")
+                                }
+                            }
+                        }
+                    }
+                    .presentationDragIndicator(.visible)
+                }
+            }
         }
         HStack (spacing: 10) {
             Text("Show:")
@@ -176,4 +250,18 @@ struct show: Codable {
 
 #Preview {
     ContentView()
+}
+
+class PetersHaptics {
+    static let process = PetersHaptics()
+    
+    private init() { }
+    
+    func impact(_ feedbackStyle: UIImpactFeedbackGenerator.FeedbackStyle) {
+        UIImpactFeedbackGenerator(style: feedbackStyle).impactOccurred()
+    }
+    
+    func notification(_ feedbackType: UINotificationFeedbackGenerator.FeedbackType) {
+        UINotificationFeedbackGenerator().notificationOccurred(feedbackType)
+    }
 }
