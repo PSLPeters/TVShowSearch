@@ -85,31 +85,19 @@ struct ContentView: View {
                         }
                         Spacer()
                         Form {
-                            Section ("Core information:") {
-                                UIDeviceElementView(deviceElementTitle: "Device Name:", deviceElementData: UIDevice.current.name)
-                                UIDeviceElementView(deviceElementTitle: "Device Model:", deviceElementData: UIDevice.current.model)
-                                UIDeviceElementView(deviceElementTitle: "Device Localized Model:", deviceElementData: UIDevice.current.localizedModel)
-                                UIDeviceElementView(deviceElementTitle: "Device System Name:", deviceElementData: UIDevice.current.systemName)
-                                UIDeviceElementView(deviceElementTitle: "Device System Version:", deviceElementData: UIDevice.current.systemVersion)
-                                UIDeviceElementView(deviceElementTitle: "Device Identifier:", deviceElementData: UIDevice.current.identifierForVendor?.uuidString ?? "N/A")
-                                UIDeviceElementView(deviceElementTitle: "Device Type:", deviceElementData: UIDevice.current.userInterfaceIdiom == .phone ? "iPhone" : "iPad")
+                            Section ("Device") {
+                                LabeledContent("Name", value: UIDevice.current.name)
+                                LabeledContent("Model", value: UIDevice.current.model)
+                                LabeledContent("Localized Model", value: UIDevice.current.localizedModel)
+                                LabeledContent("System Name", value: UIDevice.current.systemName)
+                                LabeledContent("Systen Version", value: UIDevice.current.systemVersion)
+                                LabeledContent("Identifier", value: UIDevice.current.identifierForVendor?.uuidString ?? "N/A")
+                                LabeledContent("Type", value: UIDevice.current.userInterfaceIdiom == .phone ? "iPhone" : "iPad")
                             }
-                            Section ("Screen information:") {
-                                HStack {
-                                    Text("Screen Width:")
-                                    Spacer()
-                                    Text("\(UIScreen.main.bounds.width, specifier: "%.2f") pixels")
-                                }
-                                HStack {
-                                    Text("Screen Height:")
-                                    Spacer()
-                                    Text("\(UIScreen.main.bounds.height, specifier: "%.2f") pixels")
-                                }
-                                HStack {
-                                    Text("Screen Scale:")
-                                    Spacer()
-                                    Text("\(UIScreen.main.scale, specifier: "%.2f") (\(Int(UIScreen.main.scale))x)")
-                                }
+                            Section ("Screen") {
+                                LabeledContent("Width", value: "\(UIScreen.main.bounds.width) pixels")
+                                LabeledContent("Height", value: "\(UIScreen.main.bounds.height) pixels")
+                                LabeledContent("Scale", value: "\(UIScreen.main.scale) (\(Int(UIScreen.main.scale))x)")
                             }
                         }
                     }
