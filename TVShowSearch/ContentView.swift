@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage("isDarkModeOn") var isDarkModeOn = false
-    // Test 
     
     @State private var isShowingInformationSheet = false
     @State private var isShowingLongPressAlert = false
